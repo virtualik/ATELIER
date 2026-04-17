@@ -1,0 +1,31 @@
+name: Build and Deploy OpenFL
+on:
+  push:
+    branches: [main] # Запуск при каждом пуше в main
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Haxe
+        uses: krdlab/setup-haxe@v1
+        with:
+          haxe-version: 4.3.4
+
+      - name: Install Libraries
+        run: |
+          haxelib install lime
+          haxelib install openfl
+          haxelib run openfl setup
+
+      - name: Build HTML5
+        run: haxelib run openfl build html5 -final
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./bin/html5/bin # Путь к результату сборки
+          force_orphan: true
