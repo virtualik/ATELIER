@@ -1,0 +1,44 @@
+name: Build and Deploy OpenFL
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Haxe
+        uses: krdlab/setup-haxe@v1
+        with:
+          haxe-version: 4.3.4
+
+      - name: Install Libraries
+        run: |
+          haxelib install lime
+          haxelib install openfl
+          haxelib run openfl setup
+
+      - name: Build Project
+        run: haxelib run openfl build html5 -final
+
+      - name: Upload Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # ВНИМАНИЕ: Проверь этот путь! 
+          # Обычно OpenFL собирает в 'bin/html5/bin' или 'Export/html5/bin'
+          path: './Export/html5/bin' 
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+    steps:
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
