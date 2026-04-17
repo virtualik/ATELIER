@@ -4,19 +4,29 @@ import openfl.display.Sprite;
 import openfl.display.Shape;
 import openfl.events.Event;
 import openfl.events.MouseEvent;
-import openfl.Vector;
+import openfl.text.TextField;
+import openfl.text.TextFormat;
 
 /**
- * Тестовая сцена: Интерактивный рой частиц.
- * Частицы следуют за мышью, используя простую физику притяжения.
+ * Интерактивный рой частиц.
+ * Исправлены ошибки типизации (Void) и добавлена адаптивность.
  */
 class Main extends Sprite {
     
     private var particles:Array<Particle>;
-    private var numParticles:Int = 100;
+    private var numParticles:Int = 120;
+    private var statusLabel:TextField;
 
     public function new() {
         super();
+        
+        // Дождемся добавления на сцену для правильных размеров stage
+        if (stage != null) init();
+        else addEventListener(Event.ADDED_TO_STAGE, init);
+    }
+
+    private function init(?e:Event):Void {
+        removeEventListener(Event.ADDED_TO_STAGE, init);
         
         particles = [];
         
@@ -26,51 +36,66 @@ class Main extends Sprite {
             addChild(p);
             particles.push(p);
         }
+
+        // Добавляем текстовое поле для красоты
+        statusLabel = new TextField();
+        statusLabel.defaultTextFormat = new TextFormat("_sans", 14, 0x666666);
+        statusLabel.text = "Haxe + OpenFL: Particle Demo. Click to explode.";
+        statusLabel.width = 400;
+        statusLabel.x = 10;
+        statusLabel.y = 10;
+        statusLabel.selectable = false;
+        addChild(statusLabel);
         
-        // Главный цикл анимации
-        addEventListener(Event.ENTER_FRAME, onEnterFrame);
-        
-        // Добавим клик для "взрыва"
-        stage.addEventListener(MouseEvent.CLICK, onStageClick);
+        // Слушатели событий
+        addEventListener(Event.ENTER_FRAME, onUpdate);
+        stage.addEventListener(MouseEvent.CLICK, onExplode);
     }
 
-    private function onEnterFrame(e:Event):void {
-        var targetX = mouseX;
-        var targetY = mouseY;
+    private function onUpdate(e:Event):Void {
+        // Используем координаты мыши или центр экрана, если мышь вне окна
+        var tx:Float = (mouseX > 0) ? mouseX : stage.stageWidth / 2;
+        var ty:Float = (mouseY > 0) ? mouseY : stage.stageHeight / 2;
 
         for (p in particles) {
-            // Рассчитываем ускорение в сторону мыши
-            var dx = targetX - p.x;
-            var dy = targetY - p.y;
+            var dx = tx - p.x;
+            var dy = ty - p.y;
             var dist = Math.sqrt(dx * dx + dy * dy);
             
-            if (dist > 5) {
-                p.vx += dx / 500;
-                p.vy += dy / 500;
+            // Физика притяжения
+            if (dist > 2) {
+                p.vx += dx / 400;
+                p.vy += dy / 400;
             }
 
-            // Применяем скорость и трение
-            p.vx *= 0.95;
-            p.vy *= 0.95;
+            // Инерция и движение
+            p.vx *= 0.94;
+            p.vy *= 0.94;
             p.x += p.vx;
             p.y += p.vy;
             
-            // Вращение по направлению движения
+            // Вращение по вектору скорости
             p.rotation = Math.atan2(p.vy, p.vx) * 180 / Math.PI;
+            
+            // Мягкий отскок от границ экрана
+            if (p.x < 0) p.vx += 2;
+            if (p.x > stage.stageWidth) p.vx -= 2;
+            if (p.y < 0) p.vy += 2;
+            if (p.y > stage.stageHeight) p.vy -= 2;
         }
     }
 
-    private function onStageClick(e:MouseEvent):void {
-        // Разбрасываем частицы при клике
+    private function onExplode(e:MouseEvent):Void {
         for (p in particles) {
-            p.vx = (Math.random() - 0.5) * 50;
-            p.vy = (Math.random() - 0.5) * 50;
+            p.vx = (Math.random() - 0.5) * 60;
+            p.vy = (Math.random() - 0.5) * 60;
         }
     }
 }
 
 /**
- * Класс отдельной частицы (стрелочки)
+ * Класс частицы. 
+ * Используем Shape для экономии ресурсов.
  */
 class Particle extends Shape {
     public var vx:Float = 0;
@@ -79,19 +104,18 @@ class Particle extends Shape {
     public function new() {
         super();
         
-        // Рисуем маленькую стрелку/треугольник
+        // Рисуем стильный треугольник
         var color = Std.int(Math.random() * 0xFFFFFF);
-        graphics.beginFill(color);
-        graphics.moveTo(10, 0);
-        graphics.lineTo(-5, -5);
-        graphics.lineTo(-5, 5);
-        graphics.lineTo(10, 0);
+        graphics.beginFill(color, 0.8);
+        graphics.moveTo(12, 0);
+        graphics.lineTo(-6, -6);
+        graphics.lineTo(-3, 0);
+        graphics.lineTo(-6, 6);
+        graphics.lineTo(12, 0);
         graphics.endFill();
         
-        // Случайная начальная позиция
+        // Рандомный спавн в пределах видимости
         x = Math.random() * 800;
         y = Math.random() * 600;
-        vx = (Math.random() - 0.5) * 10;
-        vy = (Math.random() - 0.5) * 10;
     }
 }
