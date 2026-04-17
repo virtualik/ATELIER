@@ -1,0 +1,12 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "OpenFL: Build HTML5",
+            "type": "shell",
+            "command": "openfl build html5",
+            "group": "build",
+            "problemMatcher": "$haxe"
+        }
+    ]
+}
