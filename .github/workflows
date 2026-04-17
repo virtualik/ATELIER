@@ -27,5 +27,5 @@ jobs:
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./bin/html5/bin # Путь к результату сборки
+          publish_dir: ./Export/html5/bin # Путь к результату сборки
           force_orphan: true

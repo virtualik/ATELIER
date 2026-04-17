@@ -8,7 +8,7 @@ class Main extends Sprite {
 		super();
 		
 		var square = new Shape();
-		square.graphics.beginFill(0xFF0000); // Красный цвет
+		square.graphics.beginFill(0x00FFCC); 
 		square.graphics.drawRect(0, 0, 100, 100);
 		square.graphics.endFill();
 		
