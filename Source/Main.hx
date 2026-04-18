@@ -40,7 +40,7 @@ class Main extends Sprite {
         // Добавляем текстовое поле для красоты
         statusLabel = new TextField();
         statusLabel.defaultTextFormat = new TextFormat("_sans", 14, 0x666666);
-        statusLabel.text = "Haxe + OpenFL: Particle Demo. Click to explode.";
+        statusLabel.text = "Particle Demo. Click to explode.";
         statusLabel.width = 400;
         statusLabel.x = 10;
         statusLabel.y = 10;
@@ -61,7 +61,9 @@ class Main extends Sprite {
             var dx = tx - p.x;
             var dy = ty - p.y;
             var dist = Math.sqrt(dx * dx + dy * dy);
-            
+			
+           //p.alpha = 0.1 + (Math.abs(p.vx) + Math.abs(p.vy)) / 40;
+			
             // Физика притяжения
             if (dist > 2) {
                 p.vx += dx / 400;
@@ -76,7 +78,7 @@ class Main extends Sprite {
             
             // Вращение по вектору скорости
             p.rotation = Math.atan2(p.vy, p.vx) * 180 / Math.PI;
-            
+           
             // Мягкий отскок от границ экрана
             if (p.x < 0) p.vx += 2;
             if (p.x > stage.stageWidth) p.vx -= 2;
